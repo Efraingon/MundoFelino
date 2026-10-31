@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mundo Felino">
+  <rect width="64" height="64" rx="16" fill="#a44838"/>
+  <g fill="#fff8ec">
+    <ellipse cx="32" cy="41" rx="12" ry="9.5"/>
+    <circle cx="19" cy="27" r="5"/>
+    <circle cx="27.5" cy="20.5" r="5"/>
+    <circle cx="36.5" cy="20.5" r="5"/>
+    <circle cx="45" cy="27" r="5"/>
+  </g>
+</svg>

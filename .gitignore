@@ -1,0 +1,26 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# Playwright CLI local browser profiles
+frontend/mundo-felino-web/.playwright/cache/
+**/.playwright/
+
+# Resultados de Playwright
+**/test-results/
+**/playwright-report/
+**/blob-report/
+
+# Artefactos de herramientas internas del agente (no son parte del proyecto)
+.taste-skill/
+.agents/
+.img2threejs/
+.impeccable/
+.pnpm-store/
+docs/
