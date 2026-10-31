@@ -1,0 +1,12 @@
+{
+  "name": "mundo-felino-mvp",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "cd frontend/mundo-felino-web && npm run dev",
+    "build": "cd frontend/mundo-felino-web && npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
