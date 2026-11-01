@@ -24,3 +24,7 @@ frontend/mundo-felino-web/.playwright/cache/
 .impeccable/
 .pnpm-store/
 docs/
+
+# pnpm (usamos npm para Vercel)
+pnpm-lock.yaml
+pnpm-workspace.yaml
