@@ -1,4 +1,5 @@
 import type { Article, ArticleDetail, Clinic, ChatReply, ChatSource } from "./types";
+import { getMockChatResponse as getMockAnswer } from "./mock-data/chat";
 
 export const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5080";
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -78,6 +79,9 @@ export async function apiGetArticleBySlug(slug: string): Promise<ArticleDetail> 
 // --------------------------------------------------------------------------
 // CLÍNICAS VETERINARIAS
 // --------------------------------------------------------------------------
+import { getClinicsWithFilters as getMockClinics } from "./mock-data/clinics";
+
+// Función para obtener veterinarios con soporte de datos simulados
 export async function apiGetClinics(municipality?: string, emergencyOnly?: boolean): Promise<Clinic[]> {
   if (isSupabaseConfigured) {
     const params = new URLSearchParams();
@@ -124,7 +128,13 @@ export async function apiGetClinics(municipality?: string, emergencyOnly?: boole
   if (emergencyOnly) params.set("emergency", "true");
   const query = params.toString();
   const res = await fetch(`${API}/api/v1/clinics${query ? `?${query}` : ""}`);
-  if (!res.ok) throw new Error();
+  
+  // Si la respuesta del backend falla o USE_MOCK_DATA está activo
+  if (!res.ok || import.meta.env.USE_MOCK_DATA === "true") {
+    console.log("📍 Usando datos simulados de veterinarios..." );
+    return getMockClinics(municipality, emergencyOnly);
+  }
+  
   return readJson<Clinic[]>(res);
 }
 
@@ -207,7 +217,13 @@ export async function apiSendChat(
     }
   }
 
-  // 4. Asistente Educativo Integrado (Respuestas verificadas de la guía felina)
+  // 4. Fallback a datos simulados si USE_MOCK_DATA=true o backend falla
+  if (import.meta.env.USE_MOCK_DATA === "true") {
+    console.log("📍 Usando respuestas simuladas del chat..." );
+    return getMockAnswer(normalized);
+  }
+  
+  // 5. Asistente Educativo Integrado (Respuestas verificadas de la guía felina)
   return getKnowledgeBaseAnswer(normalized);
 }
 

@@ -1,0 +1,35 @@
+# Compiled binaries
+bin/
+obj/
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+
+# IDE folders
+.vs/
+.idea/
+.project
+.userprefs
+.csproj.user
+
+# Environment files (ya están excluidos en el root)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+*.log
+backend.log
+
+# User-specific settings
+*.suo
+*.useros
+*.user
+
+# OS specific files
+.DS_Store
+Thumbs.db

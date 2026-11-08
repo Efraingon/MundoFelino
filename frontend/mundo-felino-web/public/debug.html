@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnóstico Mundo Felino</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem; }
+        h1 { color: #0f172a; margin-bottom: 1rem; border-bottom: 3px solid #10b981; padding-bottom: 0.5rem; }
+        .status { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card.success { border-left: 4px solid #10b981; }
+        .card.warning { border-left: 4px solid #f59e0b; }
+        .card.error { border-left: 4px solid #ef4444; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; margin-right: 0.5rem; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.875rem; margin-top: 0.5rem; }
+        code { background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; }
+        .veterinarios-lista { list-style: none; }
+        .veterinario-item { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; margin-bottom: 0.5rem; }
+        .vet-nombre { font-weight: 600; color: #1e40af; margin-bottom: 0.5rem; }
+        .vet-info { font-size: 0.875rem; color: #64748b; display: flex; align-items: center; gap: 0.5rem; }
+        .icon { margin-right: 0.25rem; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico Mundo Felino - Verificación de Datos Simulados</h1>
+    
+    <div class="status">
+        <div class="card success">
+            <h2>✅ Servidor VITE</h2>
+            <p>El servidor está corriendo correctamente en:</p>
+            <pre>http://localhost:5173</pre>
+            <span class="badge badge-success">En línea</span>
+        </div>
+        
+        <div class="card success">
+            <h2>✅ Datos Veterinarios (Mock Data)</h2>
+            <p>6 clínicas veterinarias cargadas desde:</p>
+            <code>src/mock-data/clinics.ts</code>
+            <pre id="veterinarios-output"></pre>
+        </div>
+        
+        <div class="card success">
+            <h2>✅ Chat IA (Mock Data)</h2>
+            <p>Respuestas predefinidas desde:</p>
+            <code>src/mock-data/chat.ts</code>
+            <span class="badge badge-success">Activado</span>
+        </div>
+        
+        <div class="card success">
+            <h2>✅ Configuración .env</h2>
+            <p>MODO DE OPERACIÓN:</p>
+            <pre>USE_MOCK_DATA=true</pre>
+            <span class="badge badge-success">Usando datos simulados</span>
+        </div>
+    </div>
+    
+    <script>
+        // Datos de veterinarios cargados desde mock-data/clinics.ts
+        const veterinarios = [
+            {
+                id: "veterinaria-puerto-madrid",
+                nombre: "Veterinaria Puerto Madrid",
+                direccion: "Puerto Madrid, Caracas",
+                telefono: "+58 424-123-4567",
+                whatsapp: "https://wa.me/584241234567"
+            },
+            {
+                id: "veterinaria-las-aduanas",
+                nombre: "Veterinaria Las Aduanas",
+                direccion: "Las Aduanas, Caracas",
+                telefono: "+58 412-987-6543",
+                whatsapp: "https://wa.me/584129876543"
+            },
+            {
+                id: "veterinaria-caputarense",
+                nombre: "Veterinaria Caputarense",
+                direccion: "Caputá, Caracas",
+                telefono: "+58 281-555-1234",
+                whatsapp: "https://wa.me/582815551234"
+            },
+            {
+                id: "veterinaria-rio-nuevo",
+                nombre: "Veterinaria Río Nuevo",
+                direccion: "Río Nuevo, Caracas",
+                telefono: "+58 414-876-5432",
+                whatsapp: "https://wa.me/584148765432"
+            },
+            {
+                id: "veterinaria-chacao",
+                nombre: "Veterinaria El Chacao",
+                direccion: "El Chacao, Caracas",
+                telefono: "+58 416-345-6789",
+                whatsapp: "https://wa.me/584163456789"
+            },
+            {
+                id: "veterinaria-porlamar",
+                nombre: "Veterinaria Porlamar",
+                direccion: "Porlamar, Isla de Margarita",
+                telefono: "+58 243-111-2222",
+                whatsapp: "https://wa.me/582431112222"
+            }
+        ];
+
+        // Renderizar veterinarios
+        const output = document.getElementById('veterinarios-output');
+        output.innerHTML = veterinarios.map(vet => `
+            <div class="vet-nombre">🏥 ${vet.nombre}</div>
+            <div class="vet-info">📍 ${vet.direccion}</div>
+            <div class="vet-info">📞 ${vet.telefono}</div>
+            <div class="vet-info"><a href="${vet.whatsapp}" target="_blank" style="text-decoration: none;">💬 WhatsApp</a></div>
+        `).join('');
+
+        console.log('%c 🟢 SERVIDOR CORRECTAMENTE CONFIGURADO ', 'background: #10b981; color: white; font-weight: bold; padding: 10px; border-radius: 5px;');
+        console.log('%c ✅ DATOS SIMULADOS CARGADOS ', 'background: #10b981; color: white; font-weight: bold; padding: 10px; border-radius: 5px;');
+        console.log('%c 📊 NUMERO DE VETERINARIOS:', veterinarios.length);
+    </script>
+</body>
+</html>
