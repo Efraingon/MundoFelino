@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Linq;
 using MundoFelino.Api.Data;
 using MundoFelino.Api.Services;
 using System.Text;
@@ -77,21 +78,21 @@ builder.Services.AddSingleton(dbType ?? "");
 
 var origins = builder.Configuration.GetSection("Frontend:AllowedOrigins").Get<string[]>()
     ?? ["http://localhost:5173", "http://127.0.0.1:5173"];
-builder.Services.AddCors(o => o.AddPolicy("Frontend", p =>
-    p.SetIsOriginAllowed(origin =>
-    {
-        if (string.IsNullOrEmpty(origin)) return false;
-        if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-        {
-            return uri.Host == "localhost"
-                || uri.Host == "127.0.0.1"
-                || uri.Host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase)
-                || origins.Contains(origin, StringComparer.OrdinalIgnoreCase);
-        }
-        return false;
-    })
-    .AllowAnyHeader()
-    .AllowAnyMethod()));
+// Permitir CORS desde localhost (desarrollo) y Vercel (producción)
+builder.Services.AddCors(options =>
+    options.AddPolicy("Frontend", policy =>
+        policy
+            .SetIsOriginAllowed(origin =>
+                origin == "http://localhost:5173"
+                    || origin == "http://localhost:5174"
+                    || origin == "http://127.0.0.1:5173"
+                    || origin == "http://127.0.0.1:5174"
+                    || origin.EndsWith(".vercel.app")
+                    || origins.Any(o => o == origin)
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()));
 builder.Services.AddRateLimiter(o => o.AddFixedWindowLimiter("chat", x =>
 {
     x.PermitLimit = 10;
