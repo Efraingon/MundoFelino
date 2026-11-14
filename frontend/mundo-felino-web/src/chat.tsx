@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, BookOpen, Send, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Send, ShieldCheck, Sparkles, X } from "lucide-react";
 import { apiSendChat } from "./api";
 import type { ChatMessage, ChatSource } from "./types";
 
@@ -45,6 +45,8 @@ export function useCatChat() {
           content: body.answer,
           urgency: body.urgency === "urgent" ? "urgent" : "general",
           sources: body.sources ?? [],
+          provider: body.provider,
+          model: body.model,
         },
       ]);
     } catch (err) {
@@ -150,6 +152,12 @@ export function ChatWindow({ chat, id, variant = "inline", autoFocus = false, on
                   ))}
                 </div>
               ) : null}
+              {message.role === "assistant" && message.provider && (
+                <span className="chat-model" title="Proveedor de inteligencia artificial que generó la respuesta">
+                  <Sparkles size={12} />
+                  {message.provider}{message.model ? ` · ${message.model}` : ""}
+                </span>
+              )}
               {message.failed && (
                 <button className="chat-retry" type="button" onClick={() => void sendQuestion(retryQuestion, true)}>
                   Reintentar consulta <ArrowRight size={13} />

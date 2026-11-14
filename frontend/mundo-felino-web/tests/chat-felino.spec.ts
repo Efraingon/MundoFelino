@@ -20,6 +20,8 @@ async function mockApi(page: Page, chat: ChatMock = {}) {
           answer: chat.answer ?? "Evita cebolla, ajo, chocolate y uvas. Ante cualquier duda, consulta con su veterinario.",
           urgency: chat.urgency ?? "general",
           sources: [{ title: "Alimentación segura", slug: "alimentacion-segura", category: "Salud" }],
+          provider: "Ollama",
+          model: "qwen2.5:3b",
         }),
       });
       return;
@@ -74,6 +76,45 @@ test("el gatico abre el chat flotante y comparte la conversación", async ({ pag
   await page.locator("#consulta").scrollIntoViewIfNeeded();
   await expect(launcher).toBeHidden();
   await expect(page.locator("#consulta").getByText("¿Mi gato puede comer aguacate?")).toBeVisible();
+});
+
+test("la respuesta indica el modelo de IA que la generó", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#consulta");
+
+  await page.locator("#consulta-question").fill("¿Qué alimentos son tóxicos para mi gato?");
+  await page.locator("#consulta-question").press("Enter");
+
+  const panel = page.locator("#consulta");
+  await expect(panel.getByText("Ollama · qwen2.5:3b")).toBeVisible();
+});
+
+test("si el backend de IA falla, la consulta responde con la guía local", async ({ page }) => {
+  await page.route("**/api/v1/**", async route => {
+    const url = route.request().url();
+    if (url.includes("/ai/chat")) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "El asistente no está disponible temporalmente." }),
+      });
+      return;
+    }
+    if (url.includes("/articles")) {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ARTICLES) });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+  });
+
+  await page.goto("/#consulta");
+  await page.locator("#consulta-question").fill("¿Cómo logro que mi gato beba más agua?");
+  await page.locator("#consulta-question").press("Enter");
+
+  const lastAnswer = page.locator("#consulta .assistant-message").last();
+  await expect(lastAnswer).not.toBeEmpty();
+  await expect(lastAnswer).not.toContainText("El asistente respondió sin contenido");
+  await expect(page.locator("#consulta .chat-model")).toBeVisible();
 });
 
 test("una urgencia muestra el aviso y lleva a los veterinarios", async ({ page }) => {

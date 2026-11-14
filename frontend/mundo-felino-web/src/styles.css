@@ -442,6 +442,45 @@ button {
   align-items: stretch;
 }
 
+/* Glassmorphism: superficie translúcida con desenfoque y brillo interior */
+.carousel-slide-inner.elevated-card {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 45%, rgba(44, 224, 255, 0.08)),
+    rgba(10, 16, 30, 0.44);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: calc(var(--radius-lg) - 6px);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  overflow: hidden;
+}
+.carousel-slide-inner.elevated-card:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(44, 224, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.carousel-slide-inner.elevated-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(115deg, transparent 22%, rgba(255, 255, 255, 0.14) 44%, transparent 64%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.carousel-slide-inner.elevated-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .carousel-image-box {
   position: relative;
   aspect-ratio: 16 / 10;
@@ -468,10 +507,15 @@ button {
 }
 
 .carousel-caption-box {
+  position: relative;
   padding: clamp(24px, 4vw, 44px);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.015) 58%, rgba(44, 224, 255, 0.06));
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
 }
 .carousel-location {
   display: inline-flex;
@@ -498,7 +542,7 @@ button {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 18px;
 }
 .carousel-dot {
   width: 10px;
@@ -515,6 +559,31 @@ button {
   background: var(--accent-gradient);
   border-color: var(--accent-glow);
   box-shadow: var(--glow-cyan-sm);
+}
+
+/* Barra de progreso sincronizada con el avance automático (6 s) */
+.carousel-progress {
+  width: min(320px, 60%);
+  height: 3px;
+  margin: 20px auto 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.carousel-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: var(--accent-gradient);
+  animation: carouselProgress 6s linear forwards;
+}
+.carousel-progress span.is-paused {
+  animation-play-state: paused;
+}
+@keyframes carouselProgress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 /* News Modal specific additions */
@@ -1564,6 +1633,19 @@ button {
   background: var(--surface-hover);
   border-color: var(--accent-glow);
 }
+.chat-model {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+.chat-model svg {
+  color: var(--accent-glow);
+}
+
 .chat-retry {
   display: inline-flex;
   align-items: center;
@@ -1835,6 +1917,16 @@ button {
     opacity: 1;
     transform: none;
   }
+  .carousel-track {
+    transition: none;
+  }
+  .carousel-progress span {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .carousel-slide-inner.elevated-card::before {
+    display: none;
+  }
 }
 
 /* ---------- Responsive ---------- */
@@ -1887,6 +1979,10 @@ button {
   }
   .carousel-slide-inner {
     grid-template-columns: 1fr;
+  }
+  .carousel-caption-box {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
   }
 }
 

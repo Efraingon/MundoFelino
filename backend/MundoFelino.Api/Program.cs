@@ -11,11 +11,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Servicio de IA con Google Gemini (versión gratuita) - ya configurado en GoogleGeminiChatService
+// Servicios de IA: Gemini (si hay API key) y Ollama local, con selección y respaldo automático.
+builder.Services.Configure<AiOptions>(builder.Configuration.GetSection("Ai"));
 builder.Services.AddScoped<KnowledgeRetriever>();
+builder.Services.AddHttpClient<GoogleGeminiChatService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddHttpClient<OllamaAiProvider>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(120);
+});
+builder.Services.AddScoped<IAiProvider, AiProviderRouter>();
 
-// Intentar cargar .env antes de construir la app
-var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
+// Intentar cargar .env antes de construir la app (raíz del proyecto, no solo bin/)
+var envPath = Path.Combine(builder.Environment.ContentRootPath, ".env");
+if (!File.Exists(envPath))
+    envPath = Path.Combine(AppContext.BaseDirectory, ".env");
 if (File.Exists(envPath))
 {
     Environment.SetEnvironmentVariable("DEFAULT_CONNECTION", File.ReadAllText(envPath).Split('\n').FirstOrDefault(l => l.StartsWith("DEFAULT_CONNECTION="))?.Replace("DEFAULT_CONNECTION=", "") ?? "Host=localhost;Port=5432;Database=mundofelino;Username=mundofelino_app;Password=CAMBIAR");
@@ -28,6 +40,10 @@ if (File.Exists(envLocalPath))
     var envLocalContent = File.ReadAllText(envLocalPath);
     var supabaseUrl = envLocalContent.Split('\n').FirstOrDefault(l => l.StartsWith("VITE_SUPABASE_URL="))?.Replace("VITE_SUPABASE_URL=", "").Trim().Trim('"');
     var supabaseKey = envLocalContent.Split('\n').FirstOrDefault(l => l.StartsWith("VITE_SUPABASE_ANON_KEY="))?.Replace("VITE_SUPABASE_ANON_KEY=", "").Trim().Trim('"');
+    var geminiKey = envLocalContent.Split('\n').FirstOrDefault(l => l.StartsWith("VITE_GEMINI_API_KEY="))?.Replace("VITE_GEMINI_API_KEY=", "").Trim().Trim('"');
+
+    if (!string.IsNullOrEmpty(geminiKey) && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GEMINI_API_KEY")))
+        Environment.SetEnvironmentVariable("GEMINI_API_KEY", geminiKey);
     
     if (!string.IsNullOrEmpty(supabaseUrl) && !string.IsNullOrEmpty(supabaseKey))
     {

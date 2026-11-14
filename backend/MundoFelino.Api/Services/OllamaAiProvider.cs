@@ -18,7 +18,7 @@ public sealed class OllamaAiProvider(HttpClient http, IOptions<AiOptions> option
                 new { role = "system", content = request.SystemPrompt + "\n\nContexto recuperado:\n" + request.Context },
                 new { role = "user", content = request.Question }
             },
-            options = new { temperature = 0.2, num_predict = 800 }
+            options = new { temperature = 0.2, num_predict = 400, num_ctx = 4096 }
         };
         using var response = await http.PostAsJsonAsync(
             $"{settings.BaseUrl.TrimEnd('/')}/api/chat", payload, ct);

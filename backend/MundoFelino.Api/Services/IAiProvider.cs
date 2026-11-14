@@ -10,8 +10,9 @@ public interface IAiProvider
 
 public sealed class AiOptions
 {
-    public string Provider { get; set; } = "Ollama";
-    public int TimeoutSeconds { get; set; } = 45;
+    public string Provider { get; set; } = "Auto";
+    public int TimeoutSeconds { get; set; } = 120;
+    public string GeminiModel { get; set; } = "gemini-2.0-flash";
     public OllamaOptions Ollama { get; set; } = new();
 }
 public sealed class OllamaOptions

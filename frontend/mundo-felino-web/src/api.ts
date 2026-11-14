@@ -169,29 +169,38 @@ export async function apiSendChat(
       answer: "Lo descrito puede ser una emergencia veterinaria inmediata. Contacta o acude ahora mismo a una clínica veterinaria con guardia de urgencias; no esperes una respuesta por el chat. No administres medicamentos humanos ni remedios caseros sin supervisión profesional.",
       urgency: "urgent",
       sources: [],
+      provider: "Regla de seguridad",
+      model: "urgencias",
     };
   }
 
-  // 2. Si hay backend tradicional disponible, consultar
-  if (!isSupabaseConfigured || import.meta.env.VITE_API_BASE_URL) {
+  // 2. Backend .NET: conecta con el modelo de IA (Ollama local o Gemini)
+  if (API) {
     try {
       const res = await fetch(`${API}/api/v1/ai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(Number(import.meta.env.VITE_CHAT_TIMEOUT_MS ?? 90000)),
+        signal: AbortSignal.timeout(Number(import.meta.env.VITE_CHAT_TIMEOUT_MS ?? 120000)),
         body: JSON.stringify({ question, history }),
       });
-      return readJson<ChatReply>(res);
+
+      if (res.ok) {
+        const body = await readJson<ChatReply>(res);
+        if (body.answer?.trim()) return body;
+        console.warn("El backend de chat respondió sin contenido; usando respaldo local.");
+      } else {
+        const detail: { error?: string } = await readJson<{ error?: string }>(res).catch(() => ({}));
+        console.warn(`El backend de chat respondió ${res.status}${detail.error ? `: ${detail.error}` : ""}`);
+      }
     } catch (err) {
-      // Si el backend tradicional falla pero estamos en modo autónomo, pasar al fallback
-      if (!isSupabaseConfigured) throw err;
+      console.warn("No se pudo conectar con el backend de chat:", err);
     }
   }
 
-  // 3. Si Gemini API está configurada directamente en Vercel
+  // 3. Si Gemini API está configurada directamente en el frontend
   if (GEMINI_API_KEY) {
     try {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
       const systemInstruction = "Eres Michi, el asistente educativo de Mundo Felino en Caracas. Responde con calidez, rigor preventivo y claridad sobre cuidados de gatos. No diagnostiques ni prescribas fármacos. Recomienda siempre acudir al veterinario ante signos de alarma.";
       const contents = [
         { role: "user", parts: [{ text: `${systemInstruction}\n\nPregunta del cuidador: ${question}` }] }
@@ -209,6 +218,8 @@ export async function apiSendChat(
             answer: text,
             urgency: "general",
             sources: [{ title: "Guía de Cuidados Felinos", slug: "alimentacion-segura", category: "Salud" }],
+            provider: "Gemini",
+            model: "gemini-2.0-flash",
           };
         }
       }
@@ -217,14 +228,14 @@ export async function apiSendChat(
     }
   }
 
-  // 4. Fallback a datos simulados si USE_MOCK_DATA=true o backend falla
-  if (import.meta.env.USE_MOCK_DATA === "true") {
-    console.log("📍 Usando respuestas simuladas del chat..." );
-    return getMockAnswer(normalized);
+  // 4. Fallback a datos simulados si USE_MOCK_DATA=true o el backend falla
+  if (import.meta.env.VITE_USE_MOCK_DATA === "true" || import.meta.env.USE_MOCK_DATA === "true") {
+    console.log("📍 Usando respuestas simuladas del chat...");
+    return { ...(await getMockAnswer(normalized)), provider: "Modo simulado", model: "mock-local" };
   }
-  
+
   // 5. Asistente Educativo Integrado (Respuestas verificadas de la guía felina)
-  return getKnowledgeBaseAnswer(normalized);
+  return { ...getKnowledgeBaseAnswer(normalized), provider: "Guía felina", model: "conocimiento local" };
 }
 
 function getKnowledgeBaseAnswer(question: string): ChatReply {

@@ -11,7 +11,9 @@ import {
   MapPin,
   Menu,
   MessageCircle,
+  Pause,
   Phone,
+  Play,
   Search,
   ShieldCheck,
   Sparkles,
@@ -222,7 +224,23 @@ export default function App() {
   const [articleBusy, setArticleBusy] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [carouselHovered, setCarouselHovered] = useState(false);
+  const [carouselUserPaused, setCarouselUserPaused] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+
+  const carouselPaused = carouselHovered || carouselUserPaused || Boolean(selectedArticle || selectedNews);
+
+  useEffect(() => {
+    if (carouselPaused) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      setCurrentSlide(previous => (previous + 1) % CAROUSEL_SLIDES.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [carouselPaused, currentSlide]);
 
   useReveal(articles.length + (selectedNews ? 1 : 0));
   useHeroTilt(heroRef);
@@ -514,6 +532,15 @@ export default function App() {
               <div className="carousel-nav-buttons" aria-label="Controles del carrusel">
                 <button
                   type="button"
+                  className="carousel-btn carousel-toggle"
+                  onClick={() => setCarouselUserPaused(paused => !paused)}
+                  aria-label={carouselUserPaused ? "Reanudar reproducción automática del carrusel" : "Pausar reproducción automática del carrusel"}
+                  aria-pressed={carouselUserPaused}
+                >
+                  {carouselUserPaused ? <Play size={16} /> : <Pause size={16} />}
+                </button>
+                <button
+                  type="button"
                   className="carousel-btn"
                   onClick={prevSlide}
                   aria-label="Diapositiva anterior"
@@ -536,7 +563,15 @@ export default function App() {
           </div>
 
           {/* Carrusel Deslizante */}
-          <div className="carousel-container" data-reveal>
+          <div
+            className="carousel-container"
+            data-reveal
+            role="region"
+            aria-roledescription="carrusel"
+            aria-label="Galería de momentos felinos"
+            onMouseEnter={() => setCarouselHovered(true)}
+            onMouseLeave={() => setCarouselHovered(false)}
+          >
             <div
               className="carousel-track"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -562,6 +597,11 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Progreso del avance automático */}
+            <div className="carousel-progress" aria-hidden="true">
+              <span key={currentSlide} className={carouselPaused ? "is-paused" : ""} />
             </div>
 
             {/* Indicadores de puntos (Dots) */}
