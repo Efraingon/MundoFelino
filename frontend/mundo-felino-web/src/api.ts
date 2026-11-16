@@ -1,7 +1,8 @@
 import type { Article, ArticleDetail, Clinic, ChatReply, ChatSource } from "./types";
 import { getMockChatResponse as getMockAnswer } from "./mock-data/chat";
 
-export const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5080";
+const rawApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
+export const API = rawApiBase ? rawApiBase : (import.meta.env.PROD ? "" : "http://localhost:5080");
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
