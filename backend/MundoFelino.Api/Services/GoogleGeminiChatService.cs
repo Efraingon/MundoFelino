@@ -30,7 +30,7 @@ public sealed class GoogleGeminiChatService : IAiProvider
         _apiKey = configuration["Ai:GeminiApiKey"]
             ?? Environment.GetEnvironmentVariable("GEMINI_API_KEY");
         _model = string.IsNullOrWhiteSpace(options.Value.GeminiModel)
-            ? "gemini-2.0-flash"
+            ? "gemini-3.8-flash"
             : options.Value.GeminiModel;
     }
 
