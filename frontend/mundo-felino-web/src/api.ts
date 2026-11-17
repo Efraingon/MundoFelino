@@ -201,7 +201,7 @@ export async function apiSendChat(
   // 3. Si Gemini API está configurada directamente en el frontend
   if (GEMINI_API_KEY) {
     try {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
       const systemInstruction = "Eres Michi, el asistente educativo de Mundo Felino en Caracas. Responde con calidez, rigor preventivo y claridad sobre cuidados de gatos. No diagnostiques ni prescribas fármacos. Recomienda siempre acudir al veterinario ante signos de alarma.";
       const contents = [
         { role: "user", parts: [{ text: `${systemInstruction}\n\nPregunta del cuidador: ${question}` }] }
@@ -220,7 +220,7 @@ export async function apiSendChat(
             urgency: "general",
             sources: [{ title: "Guía de Cuidados Felinos", slug: "alimentacion-segura", category: "Salud" }],
             provider: "Gemini",
-            model: "gemini-2.5-flash",
+            model: "gemini-3.8-flash",
           };
         }
       }
