@@ -5,7 +5,9 @@ const rawApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
 export const API = rawApiBase ? rawApiBase : (import.meta.env.PROD ? "" : "http://localhost:5080");
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+/* El proveedor de IA (Gemini/Ollama) se configura exclusivamente desde el backend (.NET).
+   El frontend no expone ninguna clave de API al navegador. */
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
@@ -129,7 +131,7 @@ export async function apiGetClinics(municipality?: string, emergencyOnly?: boole
   if (emergencyOnly) params.set("emergency", "true");
   const query = params.toString();
   const res = await fetch(`${API}/api/v1/clinics${query ? `?${query}` : ""}`);
-  
+
   // Si la respuesta del backend falla o USE_MOCK_DATA está activo
   if (!res.ok || import.meta.env.USE_MOCK_DATA === "true") {
     console.log("📍 Usando datos simulados de veterinarios..." );
@@ -198,36 +200,8 @@ export async function apiSendChat(
     }
   }
 
-  // 3. Si Gemini API está configurada directamente en el frontend
-  if (GEMINI_API_KEY) {
-    try {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const systemInstruction = "Eres Michi, el asistente educativo de Mundo Felino en Caracas. Responde con calidez, rigor preventivo y claridad sobre cuidados de gatos. No diagnostiques ni prescribas fármacos. Recomienda siempre acudir al veterinario ante signos de alarma.";
-      const contents = [
-        { role: "user", parts: [{ text: `${systemInstruction}\n\nPregunta del cuidador: ${question}` }] }
-      ];
-      const res = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents }),
-      });
-      if (res.ok) {
-        const geminiData = await res.json();
-        const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          return {
-            answer: text,
-            urgency: "general",
-            sources: [{ title: "Guía de Cuidados Felinos", slug: "alimentacion-segura", category: "Salud" }],
-            provider: "Gemini",
-            model: "gemini-1.5-flash",
-          };
-        }
-      }
-    } catch {
-      // Si Gemini da error de red, pasa al asistente de conocimiento local
-    }
-  }
+// 3. El proveedor de IA se resuelve mediante el backend .NET
+  // (llamada a /api/v1/ai/chat). Si el backend no responde, continuamos a los fallback.
 
   // 4. Fallback a datos simulados si USE_MOCK_DATA=true o el backend falla
   if (import.meta.env.VITE_USE_MOCK_DATA === "true" || import.meta.env.USE_MOCK_DATA === "true") {
@@ -281,7 +255,7 @@ function getKnowledgeBaseAnswer(question: string): ChatReply {
   if (question.includes("vacuna") || question.includes("desparasit") || question.includes("pulga")) {
     sources.push({ title: "Vacunación y desparasitación básica", slug: "vacunacion-y-desparasitacion", category: "Salud" });
     return {
-      answer: "El esquema esencial incluye la Triple Felina (panleucopenia, calicivirus, rinotraqueítis) y la vacuna contra la Rabia, con desparasitación regular incluso si el gato no sale de casa, ya que los parásitos pueden entrar en nuestros zapatos.",
+      answer: "El esquema esencial incluye la Triple Felina (panleucopenia, calicivirus y rinotraqueítis) y la vacuna contra la rabia, con desparasitación interna y externa incluso si el gato no sale de casa, ya que los parásitos pueden llegar en calzado o ropa. Confirma el calendario con tu veterinario.",
       urgency: "general",
       sources,
     };
